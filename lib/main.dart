@@ -3,8 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'dart:collection';
 
+import 'package:permission_handler/permission_handler.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Request necessary permissions for WebRTC (Mic/Camera) in WebView
+  await Permission.camera.request();
+  await Permission.microphone.request();
+
   runApp(const MyApp());
 }
 

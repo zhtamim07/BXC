@@ -20,6 +20,30 @@ jobs:
       - run: flutter create --platforms ios .
       - run: flutter pub get
       
+      - name: Inject iOS Permission Handler Macros
+        run: |
+          sed -i '' '/<key>CFBundleDevelopmentRegion<\/key>/i\
+          <key>NSCameraUsageDescription</key>\
+          <string>Used for WebRTC features in Cloud Gaming</string>\
+          <key>NSMicrophoneUsageDescription</key>\
+          <string>Used for voice chat in Cloud Gaming</string>' ios/Runner/Info.plist
+          
+          sed -i '' 's/# platform :ios, .*/platform :ios, "13.0"/g' ios/Podfile
+          
+          cat << 'EOF' >> ios/Podfile
+          post_install do |installer|
+            installer.pods_project.targets.each do |target|
+              flutter_additional_ios_build_settings(target)
+              target.build_configurations.each do |config|
+                config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+                  '$(inherited)',
+                  'PERMISSION_CAMERA=1',
+                  'PERMISSION_MICROPHONE=1'
+                ]
+              end
+            end
+          end
+          EOF
 
       - run: pod repo update
         working-directory: ios
